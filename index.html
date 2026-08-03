@@ -461,7 +461,9 @@
 
             function updateSky() {
                 const now = new Date();
-                const minutes = now.getHours() * 60 + now.getMinutes();
+                const totalSeconds = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
+                const cycleMinutes = (totalSeconds / 60) % 24;  // 每24分钟循环一次，范围 0 ~ 23.99
+                const minutes = cycleMinutes * 60;  // 映射回 0 ~ 1439 的范围，复用原有的分段逻辑
                 let bgGradient = '';
                 let starOpacity = 1;
 
