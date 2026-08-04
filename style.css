@@ -338,3 +338,70 @@ body {
         width: 180px;
     }
 }
+/* 移动端菜单按钮 */
+#menuToggle {
+    display: none;
+}
+
+/* 移动端侧边栏覆盖层 */
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 50;
+}
+
+/* 窄屏适配 */
+@media (max-width: 768px) {
+    #menuToggle {
+        display: block;
+    }
+
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        transform: translateX(-100%);
+        width: 260px;
+        height: 100vh;
+        z-index: 60;
+        transition: transform 0.3s ease;
+        border-radius: 0;
+        box-shadow: 4px 0 30px rgba(0,0,0,0.6);
+    }
+
+    .sidebar.open {
+        transform: translateX(0);
+    }
+
+    .sidebar-overlay.active {
+        display: block;
+    }
+
+    /* 侧边栏隐藏状态在移动端不要完全消失，用transform控制 */
+    .sidebar.hidden {
+        transform: translateX(-100%) !important;
+        width: 260px !important;
+        padding: 2rem 1rem !important;
+        opacity: 1 !important;
+        pointer-events: auto !important;
+        border: none !important;
+        overflow: hidden !important;
+    }
+
+    .sidebar.hidden.open {
+        transform: translateX(0) !important;
+    }
+
+    .main {
+        padding: 1.5rem 1rem;
+    }
+
+    .hero h1 {
+        font-size: 2rem;
+    }
+}
