@@ -78,4 +78,50 @@
         }
     }
     refreshSidebar();
+     const menuToggle = document.getElementById('menuToggle');
+    const overlay = document.getElementById('sidebarOverlay');
+
+    function toggleSidebar() {
+        sidebar.classList.toggle('open');
+        if (overlay) overlay.classList.toggle('active');
+    }
+
+    function closeSidebar() {
+        sidebar.classList.remove('open');
+        if (overlay) overlay.classList.remove('active');
+    }
+
+    if (menuToggle) {
+        menuToggle.addEventListener('click', toggleSidebar);
+    }
+
+    if (overlay) {
+        overlay.addEventListener('click', closeSidebar);
+    }
+
+    // 点击侧边栏内部链接后自动收起
+    sidebarNav.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', closeSidebar);
+    });
+
+    // 窗口变宽时自动收起
+    window.addEventListener('resize', function() {
+        if (window.innerWidth > 768) {
+            closeSidebar();
+        }
+    });
+
+    // ===== 侧边栏智能隐藏逻辑（保留，但移动端不生效） =====
+    function refreshSidebar() {
+        const links = sidebarNav.querySelectorAll('a');
+        if (window.innerWidth > 768 && links.length <= 1) {
+            sidebar.classList.add('hidden');
+        } else {
+            sidebar.classList.remove('hidden');
+        }
+    }
+    refreshSidebar();
+
+    // 窗口变化时重新判断
+    window.addEventListener('resize', refreshSidebar);
 })();
