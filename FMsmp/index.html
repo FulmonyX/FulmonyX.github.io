@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FMsmp · 生存服务器</title>
+    <style>
+        /* ===== 全局重置 & 字体 ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        html {
+            scroll-behavior: smooth;
+        }
+        body {
+            background: #070b17;
+            color: #e0dee6;
+            font-family: 'Segoe UI', 'PingFang SC', Roboto, 'Helvetica Neue', sans-serif;
+            min-height: 100vh;
+            padding-top: 68px;
+            background-image:
+                radial-gradient(ellipse at 15% 40%, rgba(25, 40, 80, 0.35) 0%, transparent 55%),
+                radial-gradient(ellipse at 85% 70%, rgba(50, 35, 10, 0.2) 0%, transparent 50%),
+                linear-gradient(180deg, #050814 0%, #0c1124 100%);
+            background-attachment: fixed;
+        }
+
+        /* ===== 星星 ===== */
+        #stars {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+        .star {
+            position: absolute;
+            background: #fff;
+            border-radius: 50%;
+            animation: twinkle var(--d, 3s) ease-in-out infinite alternate;
+        }
+        @keyframes twinkle {
+            0% { opacity: 0.15; transform: scale(0.7); }
+            100% { opacity: 1; transform: scale(1.2); }
+        }
+
+        /* ===== 导航 ===== */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: rgba(7, 11, 23, 0.85);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border-bottom: 1px solid rgba(255, 215, 0, 0.08);
+            padding: 0 2rem;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+        }
+        .nav-brand {
+            font-size: 1.4rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #f9d976, #d4880f);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: 1px;
+            flex-shrink: 0;
+        }
+        .nav-links {
+            display: flex;
+            gap: 0.2rem;
+            list-style: none;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+        .nav-links a {
+            color: #8890b0;
+            text-decoration: none;
+            font-size: 0.85rem;
+            padding: 0.4rem 0.9rem;
+            border-radius: 30px;
+            transition: all 0.25s;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+            border: 1px solid transparent;
+        }
+        .nav-links a:hover {
+            color: #f0d890;
+            background: rgba(255, 215, 0, 0.06);
+        }
+        .nav-links a.active {
+            color: #f5c542;
+            background: rgba(255, 215, 0, 0.10);
+            border-color: rgba(255, 215, 0, 0.15);
+        }
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            gap: 4px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 6px;
+        }
+        .hamburger span {
+            display: block;
+            width: 26px;
+            height: 2.5px;
+            background: #b0b8d0;
+            border-radius: 4px;
+            transition: 0.25s;
+        }
+
+        /* ===== 主容器 ===== */
+        .main {
+            position: relative;
+            z-index: 1;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 1.5rem 3rem;
+        }
+
+        /* ===== 区块通用 ===== */
+        .section {
+            background: rgba(11, 15, 30, 0.55);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 215, 0, 0.06);
+            border-radius: 32px;
+            padding: 2.4rem 2.8rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+            transition: border-color 0.2s;
+            scroll-margin-top: 80px;
+        }
+        .section:hover {
+            border-color: rgba(255, 215, 0, 0.10);
+        }
+        .section-title {
+            font-size: 1.6rem;
+            font-weight: 600;
+            color: #f0e5c8;
+            margin-bottom: 1.4rem;
+            letter-spacing: 1px;
+            border-left: 4px solid #f5c542;
+            padding-left: 1rem;
+        }
+        .section-title .gold {
+            color: #f5c542;
+        }
+
+        /* ===== 首页 ===== */
+        #home {
+            text-align: center;
+            padding: 2.8rem 2rem 2.4rem;
+        }
+        #home .server-name {
+            font-size: 4.8rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #f9d976 0%, #f39c12 60%, #d4880f 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.1;
+            text-shadow: 0 0 60px rgba(243, 156, 18, 0.15);
+            letter-spacing: 2px;
+        }
+        #home .sub {
+            margin: 0.6rem 0 1.4rem;
+            color: #8892b8;
+            font-size: 1rem;
+            letter-spacing: 4px;
+        }
+        .home-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.8rem 2rem;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 20px;
+            padding: 1.4rem 2rem;
+            margin: 1.6rem auto 1.2rem;
+            max-width: 600px;
+            text-align: left;
+        }
+        .home-grid .item {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            padding: 0.25rem 0;
+        }
+        .home-grid .item .label {
+            color: #7a84a8;
+            font-size: 0.85rem;
+        }
+        .home-grid .item .value {
+            color: #e8e4da;
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+        .home-grid .item .value.gold {
+            color: #f5c542;
+        }
+        .home-desc {
+            color: #b8bedc;
+            line-height: 1.7;
+            max-width: 600px;
+            margin: 0.6rem auto 0;
+            font-size: 1rem;
+        }
+        .copy-ip {
+            display: inline-block;
+            margin-top: 0.8rem;
+            background: rgba(255, 215, 0, 0.08);
+            border: 1px solid rgba(255, 215, 0, 0.15);
+            padding: 0.3rem 1.6rem;
+            border-radius: 40px;
+            font-size: 0.85rem;
+            color: #d4c89a;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .copy-ip:hover {
+            background: rgba(255, 215, 0, 0.15);
+            color: #f5d480;
+        }
+
+        /* ===== 公告 ===== */
+        #announcement {
+            display: none;
+            border-left: 4px solid #f5c542;
+            background: rgba(255, 215, 0, 0.04);
+        }
+        #announcement.visible {
+            display: block;
+        }
+        #announcement .announce-content {
+            font-size: 1.05rem;
+            line-height: 1.8;
+            color: #d8d4e0;
+            padding: 0.2rem 0;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        /* ===== 规则 ===== */
+        .rule-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+        }
+        .rule-list li {
+            padding: 0.6rem 1.2rem;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            border-left: 3px solid rgba(255, 215, 0, 0.2);
+            font-size: 1rem;
+            color: #d0d0e0;
+        }
+        .rule-list li::before {
+            content: "◆ ";
+            color: #f5c542;
+            font-size: 0.75rem;
+        }
+
+        /* ===== 管理团队 ===== */
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+        }
+        .team-card {
+            background: rgba(0, 0, 0, 0.25);
+            border-radius: 16px;
+            padding: 1.2rem 1rem;
+            text-align: center;
+            border: 1px solid rgba(255, 215, 0, 0.05);
+            transition: 0.2s;
+        }
+        .team-card:hover {
+            border-color: rgba(255, 215, 0, 0.12);
+            background: rgba(255, 215, 0, 0.03);
+        }
+        .team-card .name {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #f0e5c8;
+        }
+        .team-card .role {
+            font-size: 0.8rem;
+            color: #8892b8;
+            margin-top: 0.1rem;
+        }
+        .team-card .role .highlight {
+            color: #f5c542;
+        }
+
+        /* ===== FAQ ===== */
+        .faq-item {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            padding: 0.9rem 0;
+        }
+        .faq-item:last-child {
+            border-bottom: none;
+        }
+        .faq-item .q {
+            font-weight: 600;
+            color: #e0dcc8;
+            display: flex;
+            align-items: baseline;
+            gap: 0.5rem;
+        }
+        .faq-item .q::before {
+            content: "Q";
+            color: #f5c542;
+            font-weight: 700;
+            font-size: 0.8rem;
+            background: rgba(255, 215, 0, 0.08);
+            padding: 0 0.5rem;
+            border-radius: 6px;
+        }
+        .faq-item .a {
+            color: #b0b8d4;
+            padding-left: 1.8rem;
+            margin-top: 0.15rem;
+            line-height: 1.6;
+        }
+        .faq-item .a::before {
+            content: "A";
+            color: #7a84a8;
+            font-weight: 600;
+            font-size: 0.75rem;
+            margin-right: 0.6rem;
+        }
+
+        /* ===== 赞助 ===== */
+        #sponsor .coming {
+            text-align: center;
+            color: #7a84a8;
+            font-size: 1.2rem;
+            letter-spacing: 2px;
+            padding: 0.8rem 0;
+        }
+
+        /* ===== 底部 ===== */
+        .footer {
+            margin-top: 1.5rem;
+            padding: 1.4rem 1rem;
+            border-top: 1px solid rgba(255, 215, 0, 0.06);
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+            color: #5a6280;
+        }
+        .footer span {
+            color: #6a7290;
+        }
+        .footer .credit {
+            color: #5a6280;
+        }
+        .footer .credit .name {
+            color: #8892b8;
+        }
+
+        /* ===== Toast ===== */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%) translateY(10px);
+            background: rgba(14, 18, 36, 0.94);
+            backdrop-filter: blur(8px);
+            padding: 0.5rem 2rem;
+            border-radius: 60px;
+            border: 1px solid rgba(255, 215, 0, 0.15);
+            color: #f5d480;
+            font-size: 0.9rem;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s, transform 0.3s;
+            z-index: 9999;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+        }
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* ===== 响应式 ===== */
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 0 1rem;
+            }
+            .nav-links {
+                display: none;
+                position: absolute;
+                top: 64px;
+                left: 0;
+                right: 0;
+                background: rgba(7, 11, 23, 0.96);
+                backdrop-filter: blur(14px);
+                flex-direction: column;
+                padding: 0.8rem 1.5rem 1.2rem;
+                border-bottom: 1px solid rgba(255, 215, 0, 0.06);
+                gap: 0.2rem;
+            }
+            .nav-links.open {
+                display: flex;
+            }
+            .nav-links a {
+                padding: 0.6rem 0.8rem;
+                width: 100%;
+                text-align: center;
+                font-size: 0.95rem;
+            }
+            .hamburger {
+                display: flex;
+            }
+            .section {
+                padding: 1.6rem 1.2rem;
+                border-radius: 24px;
+            }
+            #home .server-name {
+                font-size: 3.2rem;
+            }
+            .home-grid {
+                grid-template-columns: 1fr;
+                padding: 1rem 1.2rem;
+                gap: 0.2rem;
+            }
+            .team-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            .footer {
+                flex-direction: column;
+                gap: 0.4rem;
+                text-align: center;
+            }
+        }
+        @media (max-width: 480px) {
+            #home .server-name {
+                font-size: 2.6rem;
+            }
+            .team-grid {
+                grid-template-columns: 1fr;
+            }
+            .section {
+                padding: 1.2rem 0.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 星星 -->
+    <div id="stars"></div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <!-- ===== 导航 ===== -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-brand">FMsmp</div>
+        <button class="hamburger" id="hamburger" aria-label="菜单">
+            <span></span><span></span><span></span>
+        </button>
+        <ul class="nav-links" id="navLinks">
+            <a href="#home" class="active">首页</a>
+            <a href="#announcement">公告</a>
+            <a href="#rules">规则</a>
+            <a href="#team">管理团队</a>
+            <a href="#faq">FAQ</a>
+            <a href="#sponsor">赞助</a>
+        </ul>
+    </nav>
+
+    <!-- ===== 主内容 ===== -->
+    <div class="main">
+
+        <!-- ====== 首页 ====== -->
+        <section class="section" id="home">
+            <div class="server-name">FMsmp</div>
+            <div class="sub">✦ 原版生存 · 纯净体验 ✦</div>
+            <div class="home-grid">
+                <div class="item"><span class="label">版本</span><span class="value gold">26.2</span></div>
+                <div class="item"><span class="label">状态</span><span class="value gold">✦ 已开服</span></div>
+                <div class="item"><span class="label">IP 地址</span><span class="value" id="ipDisplay">vip.bj.frp.one:45678</span></div>
+                <div class="item"><span class="label">QQ 群</span><span class="value">1057989499</span></div>
+            </div>
+            <div class="home-desc">
+                一个注重社区与原始生存的纯净服务器。<br />
+                没有复杂的插件，只有方块、伙伴与探索。
+            </div>
+            <div class="copy-ip" onclick="copyIP()">点击复制 IP 地址</div>
+        </section>
+
+        <!-- ====== 公告 ====== -->
+        <section class="section" id="announcement">
+            <div class="section-title">公告</div>
+            <div class="announce-content" id="announceContent"></div>
+        </section>
+
+        <!-- ====== 规则 ====== -->
+        <section class="section" id="rules">
+            <div class="section-title">规则</div>
+            <ul class="rule-list">
+                <li>禁止使用任何形式的作弊 / 外挂或攻击服务器</li>
+                <li>禁止辱骂、歧视、语言攻击他人</li>
+                <li>禁止讨论政治敏感话题</li>
+                <li>禁止发布广告 / 宣传其他服务器</li>
+            </ul>
+        </section>
+
+        <!-- ====== 管理团队 ====== -->
+        <section class="section" id="team">
+            <div class="section-title">👑 管理团队</div>
+            <div class="team-grid">
+                <div class="team-card">
+                    <div class="name">FIM</div>
+                    <div class="role">超级管理员</div>
+                </div>
+                <div class="team-card">
+                    <div class="name">manba</div>
+                    <div class="role">腐竹</div>
+                </div>
+                <div class="team-card">
+                    <div class="name">zhouyi</div>
+                    <div class="role">普通管理员 · 安全审计</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ====== FAQ ====== -->
+        <section class="section" id="faq">
+            <div class="section-title">❓ 常见问题</div>
+            <div class="faq-item">
+                <div class="q">服务器有领地插件吗？</div>
+                <div class="a">没有。FMsmp 保持原版生存体验，无领地系统。</div>
+            </div>
+            <div class="faq-item">
+                <div class="q">可以破坏其他玩家的建筑吗？</div>
+                <div class="a">可以。但请为自己的行为负责，过度恶意破坏可能影响社区氛围。</div>
+            </div>
+            <div class="faq-item">
+                <div class="q">红石有什么限制？</div>
+                <div class="a">禁止建造大型红石机器或任何会导致服务器卡顿的装置。</div>
+            </div>
+            <div class="faq-item">
+                <div class="q">有传送 / 回家指令吗？</div>
+                <div class="a">没有。原版生存，所有移动靠双脚。</div>
+            </div>
+        </section>
+
+        <!-- ====== 赞助 ====== -->
+        <section class="section" id="sponsor">
+            <div class="section-title">💛 赞助</div>
+            <div class="coming"><a href="https://space.bilibili.com/1270592706">FM</a></div>
+        </section>
+
+        <!-- ====== 底部 ====== -->
+        <div class="footer">
+            <span>© 2026 FMsmp</span>
+            <span class="credit">页面构建：<span class="name">zhouyi</span></span>
+        </div>
+
+    </div>
+
+    <script>
+        // ============================================================
+        // 1. 星星
+        // ============================================================
+        (function createStars() {
+            const container = document.getElementById('stars');
+            const count = 180;
+            for (let i = 0; i < count; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                const size = Math.random() * 2.8 + 1;
+                star.style.width = size + 'px';
+                star.style.height = size + 'px';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.setProperty('--d', (Math.random() * 4 + 2.5) + 's');
+                star.style.animationDelay = (Math.random() * 6) + 's';
+                star.style.opacity = Math.random() * 0.5 + 0.2;
+                container.appendChild(star);
+            }
+        })();
+
+        // ============================================================
+        // 2. 导航高亮 + 移动端汉堡
+        // ============================================================
+        const navLinks = document.querySelectorAll('.nav-links a');
+        const sections = document.querySelectorAll('.section');
+        const hamburger = document.getElementById('hamburger');
+        const navList = document.getElementById('navLinks');
+
+        hamburger.addEventListener('click', () => {
+            navList.classList.toggle('open');
+        });
+
+        // 点击导航链接关闭移动端菜单
+        navLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                navList.classList.remove('open');
+            });
+        });
+
+        // 滚动高亮
+        function updateActiveNav() {
+            let current = '';
+            const scrollY = window.scrollY + 120;
+            sections.forEach(sec => {
+                const top = sec.offsetTop;
+                const height = sec.offsetHeight;
+                if (scrollY >= top && scrollY < top + height) {
+                    current = sec.getAttribute('id');
+                }
+            });
+            // 如果滚动到最底部，高亮最后一个可见的
+            if ((window.scrollY + window.innerHeight) >= document.body.scrollHeight - 50) {
+                const last = sections[sections.length - 1];
+                if (last) current = last.getAttribute('id');
+            }
+            navLinks.forEach(a => {
+                a.classList.toggle('active', a.getAttribute('href') === '#' + current);
+            });
+        }
+        window.addEventListener('scroll', updateActiveNav);
+        window.addEventListener('load', updateActiveNav);
+
+        // ============================================================
+        // 3. 公告渲染（支持 &c{RGBA}{文字}  && 转义）
+        // ============================================================
+        // ★★★ 在这里编辑公告内容 ★★★
+        // 格式：&c{255,215,0,1}{金色文字} && 普通文字
+        // 空字符串 = 公告隐藏
+        const ANNOUNCEMENT_RAW = '&c{255,215,0,1}{zhouyi 牛逼！}请输入文本&&滚滚长江东逝水'; // <--- 编辑这里
+
+        function renderAnnouncement(raw) {
+            const section = document.getElementById('announcement');
+            const container = document.getElementById('announceContent');
+            if (!raw || raw.trim() === '') {
+                section.classList.remove('visible');
+                container.innerHTML = '';
+                return;
+            }
+            section.classList.add('visible');
+
+            // 先处理 && → 占位符（避免被当成颜色标记）
+            let text = raw.replace(/\&\&/g, '\uE000');
+
+            // 匹配 &c{RGBA}{内容}  注意内容里可能包含 } 但简单场景够用
+            const parts = [];
+            let lastIndex = 0;
+            const regex = /&c\{([^}]*)\}\{([^}]*)\}/g;
+            let match;
+            while ((match = regex.exec(text)) !== null) {
+                // 前面的普通文本
+                if (match.index > lastIndex) {
+                    parts.push({ type: 'text', content: text.substring(lastIndex, match.index) });
+                }
+                const rgba = match[1].trim();
+                const content = match[2];
+                parts.push({ type: 'color', rgba: rgba, content: content });
+                lastIndex = regex.lastIndex;
+            }
+            // 剩余普通文本
+            if (lastIndex < text.length) {
+                parts.push({ type: 'text', content: text.substring(lastIndex) });
+            }
+
+            // 如果没有任何颜色标记，整个当作普通文本
+            if (parts.length === 0) {
+                container.textContent = text.replace(/\uE000/g, '&');
+                return;
+            }
+
+            // 构建 DOM
+            container.innerHTML = '';
+            for (const p of parts) {
+                if (p.type === 'text') {
+                    const span = document.createElement('span');
+                    span.textContent = p.content.replace(/\uE000/g, '&');
+                    container.appendChild(span);
+                } else {
+                    const span = document.createElement('span');
+                    const rgba = p.rgba.split(',').map(s => s.trim());
+                    if (rgba.length >= 3) {
+                        const r = parseFloat(rgba[0]) || 255;
+                        const g = parseFloat(rgba[1]) || 215;
+                        const b = parseFloat(rgba[2]) || 0;
+                        const a = rgba.length >= 4 ? parseFloat(rgba[3]) : 1;
+                        span.style.color = `rgba(${r},${g},${b},${a})`;
+                    }
+                    span.textContent = p.content.replace(/\uE000/g, '&');
+                    container.appendChild(span);
+                }
+            }
+        }
+
+        renderAnnouncement(ANNOUNCEMENT_RAW);
+
+        // 暴露给控制台方便调试（可选）
+        window.setAnnouncement = function(raw) {
+            renderAnnouncement(raw);
+        };
+
+        // ============================================================
+        // 4. 复制 IP
+        // ============================================================
+        function copyIP() {
+            const ip = 'vip.bj.frp.one:45678';
+            const toast = document.getElementById('toast');
+            navigator.clipboard?.writeText(ip).then(() => {
+                showToast('✓ IP 已复制');
+            }).catch(() => {
+                // fallback
+                const ta = document.createElement('textarea');
+                ta.value = ip;
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                ta.remove();
+                showToast('✓ IP 已复制');
+            });
+        }
+
+        function showToast(msg) {
+            const el = document.getElementById('toast');
+            el.textContent = msg;
+            el.classList.add('show');
+            clearTimeout(window._toastTimer);
+            window._toastTimer = setTimeout(() => {
+                el.classList.remove('show');
+            }, 2000);
+        }
+
+        // 点击首页IP也可以复制
+        document.getElementById('ipDisplay')?.addEventListener('click', copyIP);
+
+        // ============================================================
+        // 5. 额外：点击首页IP样式
+        // ============================================================
+        const ipEl = document.getElementById('ipDisplay');
+        if (ipEl) {
+            ipEl.style.cursor = 'pointer';
+            ipEl.title = '点击复制';
+        }
+
+        console.log('✦ FMsmp 官网已加载');
+        console.log('✦ 公告编辑: 修改 ANNOUNCEMENT_RAW 变量');
+    </script>
+</body>
+</html>
