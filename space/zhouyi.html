@@ -4,7 +4,7 @@
 <head>
     <div id="head-placeholder"></div>
     <script>
-        fetch('../head.html')
+        fetch('head.html')
             .then(res => res.text())
             .then(data => {
                 document.getElementById('head-placeholder').outerHTML = data;
