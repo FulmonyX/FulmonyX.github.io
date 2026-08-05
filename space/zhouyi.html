@@ -2,10 +2,14 @@
 <html lang="zh">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FulmonyX</title>
-    <link rel="stylesheet" href="../style.css">
+    <div id="head-placeholder"></div>
+    <script>
+        fetch('../head.html')
+            .then(res => res.text())
+            .then(data => {
+                document.getElementById('head-placeholder').outerHTML = data;
+            });
+    </script>
 </head>
 
 <body>
