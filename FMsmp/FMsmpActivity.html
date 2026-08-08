@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FMsmp · 寻抗日精神 追浴血先辈</title>
+    <style>
+        /* ===== 全局重置 & 基础 ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0d0d0f;
+            display: flex;
+            justify-content: center;
+            padding: 2rem 1rem;
+            font-family: 'PingFang SC', 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            line-height: 1.6;
+            color: #e8e6e3;
+            min-height: 100vh;
+            align-items: center;
+        }
+
+        /* ===== 公告卡片 ===== */
+        .notice {
+            max-width: 820px;
+            width: 100%;
+            background: #16161a;
+            border: 1px solid #2a2a30;
+            border-radius: 16px;
+            padding: 2.8rem 3rem;
+            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.6);
+            transition: border-color 0.2s;
+        }
+
+        .notice:hover {
+            border-color: #3d3d45;
+        }
+
+        /* ===== 头部 ===== */
+        .header {
+            text-align: center;
+            border-bottom: 1px solid #2a2a30;
+            padding-bottom: 1.6rem;
+            margin-bottom: 2rem;
+        }
+
+        .server-name {
+            font-size: 0.85rem;
+            letter-spacing: 3px;
+            color: #8888a0;
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+        }
+
+        .title {
+            font-size: 2.2rem;
+            font-weight: 600;
+            letter-spacing: 4px;
+            color: #f0ece0;
+        }
+
+        .title .highlight {
+            color: #c92a2a;
+        }
+
+        .sub {
+            margin-top: 0.6rem;
+            font-size: 0.95rem;
+            color: #a0a0b8;
+            letter-spacing: 2px;
+        }
+
+        .date-range {
+            display: inline-block;
+            margin-top: 0.8rem;
+            background: #202024;
+            padding: 0.3rem 1.4rem;
+            border-radius: 40px;
+            font-size: 0.85rem;
+            color: #c8c8d8;
+            letter-spacing: 1px;
+            border: 1px solid #2e2e36;
+        }
+
+        /* ===== 主题色分隔条 ===== */
+        .divider {
+            width: 60px;
+            height: 2px;
+            background: #c92a2a;
+            margin: 1.6rem auto 2rem;
+            border-radius: 4px;
+        }
+
+        /* ===== 正文 ===== */
+        .section-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #e0dcd0;
+            margin-top: 1.8rem;
+            margin-bottom: 0.6rem;
+            letter-spacing: 1px;
+            border-left: 3px solid #c92a2a;
+            padding-left: 0.8rem;
+        }
+
+        .section-title:first-of-type {
+            margin-top: 0;
+        }
+
+        .text {
+            color: #c8c8d8;
+            font-size: 0.98rem;
+            margin-bottom: 0.4rem;
+        }
+
+        .text-muted {
+            color: #9090a8;
+            font-size: 0.92rem;
+        }
+
+        /* ===== 列表 ===== */
+        .list {
+            list-style: none;
+            padding: 0;
+            margin: 0.6rem 0 0.2rem 0;
+        }
+
+        .list li {
+            padding: 0.4rem 0 0.4rem 1.4rem;
+            position: relative;
+            color: #d0d0e0;
+            font-size: 0.96rem;
+            border-bottom: 1px solid #1e1e24;
+        }
+
+        .list li:last-child {
+            border-bottom: none;
+        }
+
+        .list li::before {
+            content: "◆";
+            position: absolute;
+            left: 0;
+            color: #c92a2a;
+            font-size: 0.6rem;
+            top: 0.65rem;
+        }
+
+        /* ===== 宝物列表（行内） ===== */
+        .relics {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem 1.2rem;
+            margin: 0.6rem 0 0.2rem 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        .relics li {
+            color: #d0d0e0;
+            font-size: 0.92rem;
+            padding: 0.15rem 0;
+        }
+
+        .relics li::before {
+            content: "·";
+            color: #c92a2a;
+            font-weight: 700;
+            margin-right: 0.3rem;
+        }
+
+        /* ===== 日程表 ===== */
+        .schedule {
+            margin: 0.6rem 0 0.2rem 0;
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.92rem;
+        }
+
+        .schedule td {
+            padding: 0.35rem 0.3rem 0.35rem 0;
+            border-bottom: 1px solid #1e1e24;
+            color: #c0c0d0;
+        }
+
+        .schedule tr:last-child td {
+            border-bottom: none;
+        }
+
+        .schedule .day {
+            color: #9090a8;
+            width: 72px;
+            white-space: nowrap;
+        }
+
+        .schedule .event {
+            color: #e0dcd0;
+        }
+
+        .schedule .badge {
+            background: #202024;
+            padding: 0.1rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            color: #a0a0b8;
+            margin-left: 0.5rem;
+            white-space: nowrap;
+            border: 1px solid #2a2a32;
+        }
+
+        /* ===== 领奖条件 ===== */
+        .reward-box {
+            background: #121216;
+            border: 1px solid #2a2a30;
+            border-radius: 12px;
+            padding: 1.2rem 1.6rem;
+            margin: 0.8rem 0 0.2rem 0;
+        }
+
+        .reward-box .label {
+            color: #a0a0b8;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+        }
+
+        .reward-box .option {
+            color: #d8d8e8;
+            font-size: 0.95rem;
+            margin: 0.3rem 0;
+        }
+
+        .reward-box .option strong {
+            color: #e8e0d0;
+            font-weight: 500;
+        }
+
+        .reward-box .option .highlight {
+            color: #c92a2a;
+        }
+
+        /* ===== 脚注 ===== */
+        .footer-note {
+            margin-top: 2.2rem;
+            padding-top: 1.4rem;
+            border-top: 1px solid #1e1e24;
+            text-align: center;
+            font-size: 0.85rem;
+            color: #6a6a82;
+            letter-spacing: 1px;
+        }
+
+        .footer-note .sep {
+            color: #2a2a32;
+            margin: 0 0.6rem;
+        }
+
+        /* ===== 响应式 ===== */
+        @media (max-width: 640px) {
+            .notice {
+                padding: 1.6rem 1.2rem;
+            }
+
+            .title {
+                font-size: 1.6rem;
+                letter-spacing: 2px;
+            }
+
+            .sub {
+                font-size: 0.85rem;
+            }
+
+            .schedule td {
+                display: block;
+                padding: 0.2rem 0;
+                border-bottom: none;
+            }
+
+            .schedule tr {
+                display: block;
+                border-bottom: 1px solid #1a1a20;
+                padding: 0.4rem 0;
+            }
+
+            .schedule tr:last-child {
+                border-bottom: none;
+            }
+
+            .schedule .day {
+                width: auto;
+                font-size: 0.8rem;
+            }
+
+            .reward-box {
+                padding: 1rem 1rem;
+            }
+
+            .relics {
+                gap: 0.2rem 0.8rem;
+            }
+        }
+
+        @media (max-width: 420px) {
+            .notice {
+                padding: 1.2rem 0.8rem;
+            }
+
+            .title {
+                font-size: 1.3rem;
+            }
+
+            .server-name {
+                font-size: 0.7rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="notice">
+
+        <!-- ===== 头部 ===== -->
+        <div class="header">
+            <div class="server-name">FMsmp</div>
+            <h1 class="title">
+                寻抗日精神 · <span class="highlight">追浴血先辈</span>
+            </h1>
+            <div class="sub">纪念抗日战争胜利 81 周年</div>
+            <div class="date-range">
+                ✦ 8.10 – 8.15 · 8100 分钟 ✦
+            </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- ===== 主题 ===== -->
+        <div class="section-title">主题</div>
+        <p class="text">
+            1945 — 2026，九九八十一年。<br>
+            有些记忆，不能被时间风化。<br>
+            这一次，我们不只玩游戏。<br>
+            我们寻找五件遗落的文物，找回一段不该被忘记的历史。
+        </p>
+
+        <!-- ===== 宝物 ===== -->
+        <div class="section-title">五件宝物</div>
+        <ul class="relics">
+            <li>抗日大刀</li>
+            <li>姜庄子铁斧</li>
+            <li>高山族神弓</li>
+            <li>曹保祥连弩</li>
+            <li>儿童团红缨枪</li>
+        </ul>
+        <p class="text-muted" style="margin-top:0.4rem;">
+            每日一条线索，指引你找到它们。
+        </p>
+
+        <!-- ===== 活动日程 ===== -->
+        <div class="section-title">活动日程</div>
+        <table class="schedule">
+            <tr><td class="day">8.9</td><td class="event">线索发布</td></tr>
+            <tr><td class="day">8.10</td><td class="event">正式开始</td></tr>
+            <tr><td class="day">8.15 · 21:00</td><td class="event">闭幕 · 纪念仪式 · 获奖公示</td></tr>
+        </table>
+
+        <!-- ===== 规则 ===== -->
+        <div class="section-title">规则</div>
+        <ul class="list">
+            <li>每人可寻找多个宝物</li>
+            <li>找到宝物 → 阅读书中历史 → 获取口令 → 私聊管理员（zhouyi）</li>
+            <li>书中的历史内容请勿修改或删除</li>
+        </ul>
+
+        <!-- ===== 领奖条件 ===== -->
+        <div class="section-title">领奖条件</div>
+        <div class="reward-box">
+            <div class="label">完成寻宝后，在知乎，B站任选一项：</div>
+            <div class="option">
+                <strong>①</strong> 发布 FMsmp 服务器宣传视频 · <span class="highlight">≥ 45 秒</span>
+            </div>
+            <div class="option">
+                <strong>②</strong> 发布抗日 / 反法西斯历史题材视频 · <span class="highlight">≥ 3 分钟</span>
+            </div>
+            <div class="text-muted" style="margin-top:0.5rem; font-size:0.88rem;">
+                视频发布后将链接提交管理员审核，通过后领取奖励
+            </div>
+        </div>
+
+        <!-- ===== 奖励 ===== -->
+        <div class="section-title">奖励</div>
+        <ul class="list">
+            <li>限定称号：<strong>“寻迹者”</strong>（永久保留）</li>
+            <li>钻石块</li>
+            <li>任意附魔书</li>
+            <li>附魔金苹果</li>
+            <li>金胡萝卜</li>
+        </ul>
+
+        <!-- ===== 脚注 ===== -->
+        <div class="footer-note">
+            FMsmp · 寻抗日精神 追浴血先辈
+            <span class="sep">|</span>
+            2026.8.8
+        </div>
+
+    </div>
+
+</body>
+</html>
