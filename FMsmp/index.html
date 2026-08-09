@@ -341,13 +341,51 @@
             margin-right: 0.6rem;
         }
 
-        /* ===== 赞助 ===== */
-        #sponsor .coming {
+        /* ===== 赞助/价目表 ===== */
+        .price-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem;
+            margin-top: 0.5rem;
+        }
+        .price-card {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 16px;
+            padding: 1.2rem 1.4rem;
+            border: 1px solid rgba(255, 215, 0, 0.06);
             text-align: center;
-            color: #7a84a8;
+            transition: 0.2s;
+        }
+        .price-card:hover {
+            border-color: rgba(255, 215, 0, 0.15);
+            background: rgba(255, 215, 0, 0.04);
+        }
+        .price-card .item-name {
             font-size: 1.2rem;
-            letter-spacing: 2px;
-            padding: 0.8rem 0;
+            font-weight: 600;
+            color: #f0e5c8;
+        }
+        .price-card .item-name .highlight {
+            color: #f5c542;
+        }
+        .price-card .price-row {
+            margin-top: 0.5rem;
+            display: flex;
+            justify-content: center;
+            gap: 1.2rem;
+            flex-wrap: wrap;
+        }
+        .price-card .price-tag {
+            background: rgba(255, 215, 0, 0.08);
+            padding: 0.2rem 0.8rem;
+            border-radius: 40px;
+            font-size: 0.9rem;
+            color: #d4c89a;
+            border: 1px solid rgba(255, 215, 0, 0.05);
+        }
+        .price-card .price-tag .num {
+            color: #f5c542;
+            font-weight: 600;
         }
 
         /* ===== 底部 ===== */
@@ -446,6 +484,9 @@
                 gap: 0.4rem;
                 text-align: center;
             }
+            .price-grid {
+                grid-template-columns: 1fr;
+            }
         }
         @media (max-width: 480px) {
             #home .server-name {
@@ -480,7 +521,7 @@
             <a href="#rules">规则</a>
             <a href="#team">管理团队</a>
             <a href="#faq">FAQ</a>
-            <a href="#sponsor">赞助</a>
+            <a href="#pricing">价目表</a>
         </ul>
     </nav>
 
@@ -506,7 +547,7 @@
 
         <!-- ====== 公告 ====== -->
         <section class="section" id="announcement">
-            <div class="section-title">公告 <a href="FMsmpActivity">活动</a></div>
+            <div class="section-title">公告</div>
             <div class="announce-content" id="announceContent"></div>
         </section>
 
@@ -561,10 +602,26 @@
             </div>
         </section>
 
-        <!-- ====== 赞助 ====== -->
-        <section class="section" id="sponsor">
-            <div class="section-title">💛 赞助</div>
-            <div class="coming"><a href="https://space.bilibili.com/1270592706">FM</a></div>
+        <!-- ====== 价目表 ====== -->
+        <section class="section" id="pricing">
+            <div class="section-title">💎 赞助价目表</div>
+            <div class="price-grid">
+                <div class="price-card">
+                    <div class="item-name">🎁 抽奖箱 VIP 钥匙</div>
+                    <div class="price-row">
+                        <span class="price-tag">单把 <span class="num">3</span> 元</span>
+                        <span class="price-tag">十把 <span class="num">28</span> 元</span>
+                    </div>
+                </div>
+                <div class="price-card">
+                    <div class="item-name">👑 <span class="highlight">SMVP</span></div>
+                    <div class="price-row">
+                        <span class="price-tag">单把 <span class="num">5</span> 元</span>
+                        <span class="price-tag">十把 <span class="num">46</span> 元</span>
+                    </div>
+                </div>
+            </div>
+            <p style="color:#7a84a8;font-size:0.85rem;margin-top:1rem;text-align:center;">赞助为服务器运营提供支持，感谢你的贡献 ❤️</p>
         </section>
 
         <!-- ====== 底部 ====== -->
@@ -609,14 +666,12 @@
             navList.classList.toggle('open');
         });
 
-        // 点击导航链接关闭移动端菜单
         navLinks.forEach(link => {
             link.addEventListener('click', () => {
                 navList.classList.remove('open');
             });
         });
 
-        // 滚动高亮
         function updateActiveNav() {
             let current = '';
             const scrollY = window.scrollY + 120;
@@ -627,7 +682,6 @@
                     current = sec.getAttribute('id');
                 }
             });
-            // 如果滚动到最底部，高亮最后一个可见的
             if ((window.scrollY + window.innerHeight) >= document.body.scrollHeight - 50) {
                 const last = sections[sections.length - 1];
                 if (last) current = last.getAttribute('id');
@@ -640,12 +694,9 @@
         window.addEventListener('load', updateActiveNav);
 
         // ============================================================
-        // 3. 公告渲染（支持 &c{RGBA}{文字}  && 转义）
+        // 3. 公告渲染
         // ============================================================
-        // ★★★ 在这里编辑公告内容 ★★★
-        // 格式：&c{255,215,0,1}{金色文字} && 普通文字
-        // 空字符串 = 公告隐藏
-        const ANNOUNCEMENT_RAW = '&c{255,215,0,1}{8.10}服务器即将举办寻宝活动，截止日期&c{255,215,0,1}{8.15},为期3天。奖品包括但不限于 &c{255,0,0,0.5}        const ANNOUNCEMENT_RAW = {不死图腾 附魔金苹果 远古残骸 附魔书}举办方：zhouyi.具体规则将于8.9前公布。'; // <--- 编辑这里
+        const ANNOUNCEMENT_RAW = '&c{255,215,0,1}{8.10}服务器即将举办寻宝活动，截止日期&c{255,215,0,1}{8.15},为期3天。奖品包括但不限于 &c{255,0,0,0.5}不死图腾 附魔金苹果 远古残骸 附魔书。举办方：zhouyi。具体规则将于8.9前公布。';
 
         function renderAnnouncement(raw) {
             const section = document.getElementById('announcement');
@@ -657,16 +708,13 @@
             }
             section.classList.add('visible');
 
-            // 先处理 && → 占位符（避免被当成颜色标记）
             let text = raw.replace(/\&\&/g, '\uE000');
 
-            // 匹配 &c{RGBA}{内容}  注意内容里可能包含 } 但简单场景够用
             const parts = [];
             let lastIndex = 0;
             const regex = /&c\{([^}]*)\}\{([^}]*)\}/g;
             let match;
             while ((match = regex.exec(text)) !== null) {
-                // 前面的普通文本
                 if (match.index > lastIndex) {
                     parts.push({ type: 'text', content: text.substring(lastIndex, match.index) });
                 }
@@ -675,18 +723,15 @@
                 parts.push({ type: 'color', rgba: rgba, content: content });
                 lastIndex = regex.lastIndex;
             }
-            // 剩余普通文本
             if (lastIndex < text.length) {
                 parts.push({ type: 'text', content: text.substring(lastIndex) });
             }
 
-            // 如果没有任何颜色标记，整个当作普通文本
             if (parts.length === 0) {
                 container.textContent = text.replace(/\uE000/g, '&');
                 return;
             }
 
-            // 构建 DOM
             container.innerHTML = '';
             for (const p of parts) {
                 if (p.type === 'text') {
@@ -710,8 +755,6 @@
         }
 
         renderAnnouncement(ANNOUNCEMENT_RAW);
-
-        // 暴露给控制台方便调试（可选）
         window.setAnnouncement = function(raw) {
             renderAnnouncement(raw);
         };
@@ -725,7 +768,6 @@
             navigator.clipboard?.writeText(ip).then(() => {
                 showToast('✓ IP 已复制');
             }).catch(() => {
-                // fallback
                 const ta = document.createElement('textarea');
                 ta.value = ip;
                 document.body.appendChild(ta);
@@ -746,12 +788,7 @@
             }, 2000);
         }
 
-        // 点击首页IP也可以复制
         document.getElementById('ipDisplay')?.addEventListener('click', copyIP);
-
-        // ============================================================
-        // 5. 额外：点击首页IP样式
-        // ============================================================
         const ipEl = document.getElementById('ipDisplay');
         if (ipEl) {
             ipEl.style.cursor = 'pointer';
