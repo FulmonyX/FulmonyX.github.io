@@ -141,7 +141,6 @@
     <div class="container">
         <div class="header">
             <h1>🛡️ MC 漏洞报告</h1>
-            <span>2026-08-06 16:09</span>
         </div>
 
         <!-- ImageFrame -->
@@ -152,7 +151,10 @@
             </div>
             <div class="vuln-type">DDoS · RCE</div>
             <div class="vuln-desc">
-                依赖的图像处理器在处理特制 GIF 时存在<strong>越界写入</strong>漏洞，可导致 <strong>RCE</strong> 或 <strong>拒绝服务</strong>。
+                依赖的图像处理器在处理特制 GIF 时存在<strong>越界写入</strong>漏洞，可导致 <strong>RCE</strong> 或 <strong>拒绝服务</strong>。<br><br>
+                <strong>利用方式</strong>：构造特制 GIF 图片，通过 ImageFrame 上传或加载，触发图像处理器越界写入<br>
+                <strong>影响</strong>：可远程执行任意命令（RCE）或直接耗尽服务器资源导致崩溃<br>
+                <strong>修复</strong>：更新至官方修复版本，或禁用 ImageFrame 的 GIF 处理功能
             </div>
         </div>
 
@@ -164,11 +166,14 @@
             </div>
             <div class="vuln-type">信息泄露</div>
             <div class="vuln-desc">
-                处理基岩版玩家皮肤时，恶意图片 URL 会导致服务器向外部发起请求，可能泄露 <strong>服主个人信息</strong>。
+                处理基岩版玩家皮肤时，恶意图片 URL 会导致服务器向外部发起请求，可能泄露 <strong>服主个人信息</strong>。<br><br>
+                <strong>利用方式</strong>：设置恶意皮肤 URL（指向攻击者控制的服务器），Geyser 服务端会主动发起 HTTP 请求，暴露内网 IP、服务端版本等敏感信息<br>
+                <strong>影响</strong>：攻击者可获取服务器真实 IP、地理位置、服务端指纹，为进一步攻击提供信息<br>
+                <strong>修复</strong>：升级 Geyser 到最新版本，或在防火墙层限制服务端出站请求
             </div>
         </div>
 
-        <!-- AuthMe -->
+        <!-- AuthMe 时间侧信道 -->
         <div class="vuln-card">
             <div class="vuln-top">
                 <span class="vuln-name">FMB2026w003 AuthMe <small>v6.0.0-b2734</small></span>
@@ -176,10 +181,14 @@
             </div>
             <div class="vuln-type">时间侧信道</div>
             <div class="vuln-desc">
-                <code>comparePassword</code> 使用逐字符比较，正确/错误密码响应时间存在差异，攻击者可发送大量请求 <strong>推断管理员密码</strong>。
+                <code>comparePassword</code> 使用逐字符比较，正确/错误密码响应时间存在差异，攻击者可发送大量请求 <strong>推断管理员密码</strong>。<br><br>
+                <strong>利用方式</strong>：批量发送登录请求，记录服务器响应时间，利用时间差逐字符爆破密码<br>
+                <strong>影响</strong>：在理想网络条件下，攻击者可能恢复管理员密码，导致账号完全被接管<br>
+                <strong>修复</strong>：使用 <code>MessageDigest.isEqual()</code> 进行恒定时间比较，或升级到已修复该问题的 AuthMe 版本
             </div>
         </div>
 
+        <!-- /msg 等权限问题 -->
         <div class="vuln-card">
             <div class="vuln-top">
                 <span class="vuln-name">FMB2026w004 /msg /tell /w </span>
@@ -187,11 +196,30 @@
             </div>
             <div class="vuln-type">权限设置错误</div>
             <div class="vuln-desc">
-                没有op权限的玩家无法使用<code>/msg /tell /w /help</code>等指令
+                没有op权限的玩家无法使用<code>/msg /tell /w /help</code>等指令<br><br>
+                <strong>利用方式</strong>：无恶意利用场景，属于功能性权限配置错误，影响普通玩家正常交流<br>
+                <strong>影响</strong>：玩家无法使用私聊、帮助指令，降低游戏体验，不影响服务器安全<br>
+                <strong>修复</strong>：在权限插件中为普通玩家组添加 <code>bukkit.command.msg</code>、<code>bukkit.command.help</code> 等权限节点
+            </div>
+        </div>
+
+        <!-- AuthMe 前缀匹配登录绕过 -->
+        <div class="vuln-card">
+            <div class="vuln-top">
+                <span class="vuln-name">FMB2026w005 AuthMe <small>全版本（离线模式）</small></span>
+                <span class="risk-badge risk-high">高危 7.5</span>
+            </div>
+            <div class="vuln-type">身份混淆 · 拒绝服务</div>
+            <div class="vuln-desc">
+                AuthMe 登录冲突检查使用 <code>startsWith()</code> 前缀匹配而非 <code>equalsIgnoreCase()</code> 精确匹配。<br><br>
+                任意玩家注册 <code>{目标名}+任意后缀</code>（如 <code>Admin_chat</code>、<code>Admin_backup</code>）并保持在线，即可永久阻止目标玩家（如 <code>Admin</code>）登录，提示"已有同名用户在线"。<br><br>
+                <strong>利用方式</strong>：注册 <code>目标名任意后缀</code> → 保持在线 → 目标玩家永久无法登录<br>
+                <strong>影响</strong>：全服任意玩家可被定向攻击，管理员账号亦无法幸免<br>
+                <strong>修复</strong>：将 <code>startsWith</code> 改为 <code>equalsIgnoreCase</code>
             </div>
         </div>
         <div class="footer">
-            <span>共 4 个漏洞</span>
+            <span>共 5 个漏洞</span>
             <span>报告生成：zhouyi_bugs</span>
         </div>
     </div>
