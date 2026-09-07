@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文本加密压缩 · 高效版</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+        }
+        body {
+            background: #eef1f5;
+            min-height: 100vh;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 16px;
+        }
+        .card {
+            max-width: 780px;
+            width: 100%;
+            background: #ffffff;
+            border-radius: 28px;
+            padding: 26px 24px 30px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+            border: 1px solid #e2e8f0;
+        }
+        h1 {
+            font-weight: 500;
+            font-size: 1.6rem;
+            color: #1a2639;
+            margin: 0 0 4px 0;
+            letter-spacing: -0.3px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .sub {
+            font-size: 0.9rem;
+            color: #4a5a72;
+            margin: 0 0 18px 0;
+            padding: 6px 14px;
+            background: #f4f7fb;
+            border-radius: 40px;
+            display: inline-block;
+        }
+        .mode-tabs {
+            display: flex;
+            gap: 6px;
+            background: #f0f3f8;
+            border-radius: 40px;
+            padding: 4px;
+            margin-bottom: 18px;
+            border: 1px solid #e2e8f0;
+        }
+        .mode-tab {
+            flex: 1;
+            text-align: center;
+            padding: 10px 8px;
+            border: none;
+            background: transparent;
+            border-radius: 32px;
+            font-weight: 550;
+            font-size: 0.95rem;
+            color: #4a5a72;
+            cursor: pointer;
+            transition: 0.15s;
+        }
+        .mode-tab.active {
+            background: #ffffff;
+            color: #1a2639;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            border: 0.5px solid #d0d8e4;
+        }
+        .mode-tab:hover:not(.active) {
+            background: rgba(255,255,255,0.5);
+        }
+        .input-area {
+            position: relative;
+        }
+        textarea {
+            width: 100%;
+            padding: 14px 16px;
+            font-size: 1rem;
+            border: 1px solid #d8dfe8;
+            border-radius: 18px;
+            background: #fafcff;
+            resize: vertical;
+            min-height: 80px;
+            transition: 0.12s;
+            color: #141c2b;
+            line-height: 1.6;
+        }
+        textarea:focus {
+            outline: none;
+            border-color: #7a8aa3;
+            background: #ffffff;
+            box-shadow: 0 0 0 3px rgba(60, 80, 110, 0.06);
+        }
+        .output-area {
+            margin-top: 14px;
+            background: #f7f9fc;
+            border-radius: 18px;
+            padding: 4px 4px 4px 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid #d8dfe8;
+            transition: 0.12s;
+        }
+        .output-area:focus-within {
+            border-color: #7a8aa3;
+            background: #ffffff;
+        }
+        .output-area input {
+            flex: 1;
+            padding: 12px 0 12px 4px;
+            border: none;
+            background: transparent;
+            font-size: 0.95rem;
+            font-weight: 450;
+            color: #0a121f;
+            letter-spacing: 0.2px;
+            min-width: 0;
+            width: 100%;
+        }
+        .output-area input:focus {
+            outline: none;
+        }
+        .output-area input::selection {
+            background: #bccfe0;
+        }
+        .copy-btn {
+            background: rgba(60, 80, 110, 0.06);
+            border: none;
+            border-radius: 40px;
+            padding: 6px 16px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #1d2a3c;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: 0.12s;
+            border: 1px solid transparent;
+        }
+        .copy-btn:hover {
+            background: rgba(40, 60, 90, 0.10);
+            border-color: #c8d2df;
+        }
+        .copy-btn.copied {
+            background: #1d2a3c;
+            color: white;
+            border-color: #1d2a3c;
+        }
+        .stats {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8rem;
+            color: #4a5a72;
+            padding: 12px 4px 2px 4px;
+            border-top: 1px solid #e2e8f0;
+            margin-top: 14px;
+            gap: 6px;
+        }
+        .stats span {
+            background: #f1f5fa;
+            padding: 3px 14px;
+            border-radius: 30px;
+        }
+        .stats .ratio {
+            background: #e6edf6;
+            font-weight: 500;
+        }
+        .char-set-badge {
+            background: #eef2f7;
+            border-radius: 30px;
+            padding: 3px 14px;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            font-size: 0.68rem;
+            color: #1f2d44;
+            border: 0.5px solid #d0d8e4;
+        }
+        .footer-note {
+            margin-top: 12px;
+            font-size: 0.75rem;
+            color: #5a6a7e;
+            text-align: center;
+            opacity: 0.7;
+        }
+        .decrypt-result-box {
+            margin-top: 12px;
+            background: #f7f9fc;
+            border-radius: 16px;
+            padding: 12px 16px;
+            border: 1px solid #e2e8f0;
+            min-height: 44px;
+            color: #141c2b;
+            word-break: break-all;
+            font-size: 0.95rem;
+            transition: 0.1s;
+        }
+        .decrypt-result-box.error {
+            color: #b13e3e;
+            background: #fdf5f5;
+            border-color: #f0d0d0;
+        }
+        .flex-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px;
+        }
+        .badge-light {
+            background: #eef2f7;
+            border-radius: 30px;
+            padding: 2px 12px;
+            font-size: 0.7rem;
+            color: #3a4a5e;
+        }
+        .highlight {
+            background: #eaf3d9;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-weight: 500;
+        }
+        @media (max-width: 480px) {
+            .card { padding: 18px 14px; }
+            .mode-tab { font-size: 0.85rem; padding: 8px 4px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+        <h1>文本加密压缩</h1>
+    </div>
+    <div class="sub">字符集: 26字母 + 0-9 + !@#$%^&*+-= (74字符) · 直接编码UTF-8字节</div>
+
+    <div class="mode-tabs" id="modeTabs">
+        <button class="mode-tab active" data-mode="encrypt">加密模式</button>
+        <button class="mode-tab" data-mode="decrypt">解密模式</button>
+    </div>
+
+    <div class="input-area">
+        <textarea id="mainInput" placeholder="输入文本..."></textarea>
+    </div>
+
+    <div class="output-area">
+        <input type="text" id="resultOutput" placeholder="结果..." readonly>
+        <button class="copy-btn" id="copyBtn">复制</button>
+    </div>
+
+    <div id="decryptResultContainer" style="display: none;">
+        <div class="decrypt-result-box" id="decryptResult">(解密结果)</div>
+    </div>
+
+    <div class="stats">
+        <span id="inputLength">输入: 0 字</span>
+        <span id="charCount">输出: 0 字符</span>
+        <span class="ratio" id="ratioDisplay">压缩比: -</span>
+        <span class="char-set-badge">A-Z a-z 0-9 !@#$%^&*+-=</span>
+    </div>
+
+    <div class="footer-note">
+      页面构建:zhouyi
+    </div>
+</div>
+
+<script>
+    (function() {
+        "use strict";
+
+        // ---------- 字符集 (74) ----------
+        const ALLOWED_CHARS = 
+            'ABCDEFGHIJKLMNOPQRSTUVWXYZ' +
+            'abcdefghijklmnopqrstuvwxyz' +
+            '0123456789' +
+            '!@#$%^&*+-=';
+
+        const CHAR_TO_INDEX = new Map();
+        for (let i = 0; i < ALLOWED_CHARS.length; i++) {
+            CHAR_TO_INDEX.set(ALLOWED_CHARS[i], i);
+        }
+        const BASE = ALLOWED_CHARS.length; // 74
+
+        // ---------- 编码 (Uint8Array -> 自定义字符) ----------
+        function encodeToCustomChars(uint8Array) {
+            if (!uint8Array || uint8Array.length === 0) return '';
+
+            let bigNum = 0n;
+            for (let i = 0; i < uint8Array.length; i++) {
+                bigNum = (bigNum << 8n) | BigInt(uint8Array[i]);
+            }
+
+            if (bigNum === 0n) {
+                return ALLOWED_CHARS[0];
+            }
+
+            let result = '';
+            let temp = bigNum;
+            while (temp > 0n) {
+                const remainder = Number(temp % BigInt(BASE));
+                result = ALLOWED_CHARS[remainder] + result;
+                temp = temp / BigInt(BASE);
+            }
+            return result;
+        }
+
+        // ---------- 解码 (自定义字符 -> Uint8Array) ----------
+        function decodeFromCustomChars(encodedStr) {
+            if (!encodedStr || encodedStr.length === 0) return new Uint8Array(0);
+
+            for (let ch of encodedStr) {
+                if (!CHAR_TO_INDEX.has(ch)) {
+                    throw new Error(`无效字符: "${ch}"`);
+                }
+            }
+
+            let bigNum = 0n;
+            for (let i = 0; i < encodedStr.length; i++) {
+                const digit = CHAR_TO_INDEX.get(encodedStr[i]);
+                bigNum = bigNum * BigInt(BASE) + BigInt(digit);
+            }
+
+            if (bigNum === 0n) {
+                return new Uint8Array([0]);
+            }
+
+            let bytes = [];
+            let temp = bigNum;
+            while (temp > 0n) {
+                bytes.push(Number(temp & 0xFFn));
+                temp = temp >> 8n;
+            }
+            bytes.reverse();
+            return new Uint8Array(bytes);
+        }
+
+        // ---------- 加密: 直接 UTF-8 字节 → 74进制 ----------
+        function encryptAndCompress(text) {
+            if (!text) return '';
+
+            const encoder = new TextEncoder();
+            const utf8Bytes = encoder.encode(text);
+            return encodeToCustomChars(utf8Bytes);
+        }
+
+        // ---------- 解密: 74进制 → UTF-8 字节 → 文本 ----------
+        function decryptAndDecompress(encodedStr) {
+            if (!encodedStr) return '';
+
+            try {
+                const bytes = decodeFromCustomChars(encodedStr);
+                const decoder = new TextDecoder('utf-8');
+                return decoder.decode(bytes);
+            } catch (e) {
+                console.warn('解密失败:', e);
+                return null;
+            }
+        }
+
+        // ---------- DOM ----------
+        const mainInput = document.getElementById('mainInput');
+        const resultOutput = document.getElementById('resultOutput');
+        const copyBtn = document.getElementById('copyBtn');
+        const charCountSpan = document.getElementById('charCount');
+        const inputLengthSpan = document.getElementById('inputLength');
+        const ratioDisplay = document.getElementById('ratioDisplay');
+        const modeTabs = document.querySelectorAll('.mode-tab');
+        const decryptResultContainer = document.getElementById('decryptResultContainer');
+        const decryptResultDiv = document.getElementById('decryptResult');
+
+        let currentMode = 'encrypt';
+
+        // ---------- 核心转换 ----------
+        function transform() {
+            const inputText = mainInput.value;
+            if (!inputText) {
+                resultOutput.value = '';
+                if (currentMode === 'decrypt') {
+                    decryptResultDiv.textContent = '(请输入密文)';
+                    decryptResultDiv.classList.remove('error');
+                }
+                updateStats('', '');
+                return;
+            }
+
+            if (currentMode === 'encrypt') {
+                const encrypted = encryptAndCompress(inputText);
+                resultOutput.value = encrypted;
+                decryptResultContainer.style.display = 'none';
+                updateStats(inputText, encrypted);
+            } else {
+                const decrypted = decryptAndDecompress(inputText);
+                if (decrypted !== null) {
+                    resultOutput.value = decrypted;
+                    decryptResultDiv.textContent = '解密成功  原文: ' + decrypted;
+                    decryptResultDiv.classList.remove('error');
+                } else {
+                    resultOutput.value = '';
+                    decryptResultDiv.textContent = '解密失败: 密文格式无效或包含非法字符';
+                    decryptResultDiv.classList.add('error');
+                }
+                decryptResultContainer.style.display = 'block';
+                const outLen = resultOutput.value.length;
+                inputLengthSpan.textContent = `密文: ${inputText.length} 字符`;
+                charCountSpan.textContent = `明文: ${outLen} 字`;
+                if (outLen > 0) {
+                    const ratio = (inputText.length / outLen).toFixed(2);
+                    ratioDisplay.textContent = `膨胀比: ${ratio}x`;
+                } else {
+                    ratioDisplay.textContent = `膨胀比: -`;
+                }
+            }
+        }
+
+        function updateStats(originalText, encryptedText) {
+            if (currentMode === 'encrypt') {
+                const origLen = originalText.length;
+                const encLen = encryptedText.length;
+                inputLengthSpan.textContent = `输入: ${origLen} 字`;
+                charCountSpan.textContent = `输出: ${encLen} 字符`;
+                if (origLen > 0 && encLen > 0) {
+                    const ratio = (encLen / origLen).toFixed(2);
+                    ratioDisplay.textContent = `膨胀比: ${ratio}x`;
+                } else {
+                    ratioDisplay.textContent = `膨胀比: -`;
+                }
+            }
+        }
+
+        // ---------- 模式切换 ----------
+        function setMode(mode) {
+            currentMode = mode;
+            modeTabs.forEach(tab => {
+                const tabMode = tab.getAttribute('data-mode');
+                if (tabMode === mode) {
+                    tab.classList.add('active');
+                } else {
+                    tab.classList.remove('active');
+                }
+            });
+
+            if (mode === 'encrypt') {
+                mainInput.placeholder = '输入你想加密的文本...';
+                resultOutput.placeholder = '加密后的密文...';
+                decryptResultContainer.style.display = 'none';
+                decryptResultDiv.textContent = '';
+                transform();
+            } else {
+                mainInput.placeholder = '输入密文 ...';
+                resultOutput.placeholder = '解密后的明文...';
+                decryptResultContainer.style.display = 'block';
+                decryptResultDiv.textContent = '(等待解密...)';
+                decryptResultDiv.classList.remove('error');
+                transform();
+            }
+        }
+
+        // ---------- 复制 ----------
+        function copyResult() {
+            const text = resultOutput.value;
+            if (!text) {
+                copyBtn.textContent = '无内容';
+                setTimeout(() => { copyBtn.textContent = '复制'; }, 900);
+                return;
+            }
+            navigator.clipboard.writeText(text).then(() => {
+                copyBtn.textContent = '已复制';
+                copyBtn.classList.add('copied');
+                setTimeout(() => {
+                    copyBtn.textContent = '复制';
+                    copyBtn.classList.remove('copied');
+                }, 1600);
+            }).catch(() => {
+                resultOutput.select();
+                document.execCommand('copy');
+                copyBtn.textContent = '复制!';
+                setTimeout(() => { copyBtn.textContent = '复制'; }, 1000);
+            });
+        }
+
+        // ---------- 事件绑定 ----------
+        modeTabs.forEach(tab => {
+            tab.addEventListener('click', function() {
+                const mode = this.getAttribute('data-mode');
+                if (mode !== currentMode) {
+                    setMode(mode);
+                }
+            });
+        });
+
+        mainInput.addEventListener('input', transform);
+
+        copyBtn.addEventListener('click', copyResult);
+        resultOutput.addEventListener('dblclick', copyResult);
+        resultOutput.addEventListener('click', () => {
+            if (resultOutput.value) {
+                resultOutput.select();
+            }
+        });
+
+        // 初始
+        window.addEventListener('load', () => {
+            setMode('encrypt');
+            mainInput.value = '请输入文本';
+            transform();
+        });
+
+        console.log('[Debug]加密压缩已启动 , 字符集大小:', BASE);
+    })();
+</script>
+</body>
+</html>
